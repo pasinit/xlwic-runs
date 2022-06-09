@@ -38,7 +38,7 @@ def train(conf: omegaconf.DictConfig) -> None:
     if conf.train.model_checkpoint_callback is not None:
         model_checkpoint_callback: ModelCheckpoint = hydra.utils.instantiate(conf.train.model_checkpoint_callback)
         callbacks_store.append(model_checkpoint_callback)
-    experiment_name = conf.train.model_name
+    experiment_name = conf.train.model_name + '_' + conf.data.target_identification + '_' + conf.model.subword_combiner + '_' + conf.model.words_combiner
     save_dir = '/'.join(os.getcwd().split('/')[:-2])
 
     wandb_logger = pl_loggers.WandbLogger(name=experiment_name, 
@@ -58,18 +58,18 @@ def train(conf: omegaconf.DictConfig) -> None:
     pl_module = pl_module.load_from_checkpoint(checkpoint_path)
 
     # module test
-    accuracies = {}
-    for lang in pl_data_module.test_sets.keys():
-        loader = pl_data_module.test_dataloader(lang)
-        print('=' * 50)
-        logger.info(f'Language: {lang}')
-        trainer.test(pl_module, dataloaders=loader)
-        accuracy = pl_module.test_accuracy
-        accuracies[lang] = accuracy 
+    # accuracies = {}
+    # for lang in pl_data_module.test_sets.keys():
+    #     loader = pl_data_module.test_dataloader(lang)
+    #     print('=' * 50)
+    #     logger.info(f'Language: {lang}')
+    #     trainer.test(pl_module, dataloaders=loader)
+    #     accuracy = pl_module.test_accuracy
+    #     accuracies[lang] = accuracy 
     
-    for l, a in sorted(accuracies.items(), key=lambda elem: elem[0]):
-        print(f'{l}: {a:.3f}')
-    print(f'avg_acc: {sum(accuracies.values())/len(accuracies):.3f}')
+    # for l, a in sorted(accuracies.items(), key=lambda elem: elem[0]):
+    #     print(f'{l}: {a:.3f}')
+    # print(f'avg_acc: {sum(accuracies.values())/len(accuracies):.3f}')
 
 @hydra.main(config_path="../conf", config_name="root")
 def main(conf: omegaconf.DictConfig):
