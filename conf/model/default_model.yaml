@@ -1,0 +1,6 @@
+# @package _group_
+
+pretrained_model_name: 'xlm-roberta-large'
+use_bias: True
+words_combiner: 'cat'
+subword_combiner: 'mean'

@@ -1,0 +1,6 @@
+data
+wandb/
+experiments/xlm-roberta-large-bugged-token-selection experiments/xlm-roberta-large-token-first-weight-decay-token-type-ids
+.env
+.vscode/
+experiments/
