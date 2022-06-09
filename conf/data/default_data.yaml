@@ -1,0 +1,5 @@
+batch_size: 2
+data_dir: /home/tommaso/dev/xlwic/data/xlwic_datasets
+num_workers: 8
+target_identification: char_2_token
+test_batch_size: 4
