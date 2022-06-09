@@ -16,6 +16,8 @@ os.environ['REQUESTS_CA_BUNDLE']='/etc/ssl/certs/ca-certificates.crt'
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 def test(conf: omegaconf.DictConfig) -> None:
+    assert 'checkpoint_path' in conf
+    checkpoint_path = conf.checkpoint_path
     # reproducibility
     pl.seed_everything(conf.train.seed)
 
@@ -28,10 +30,6 @@ def test(conf: omegaconf.DictConfig) -> None:
     # trainer
     trainer: Trainer = hydra.utils.instantiate(conf.train.pl_trainer)
 
-    paths = [x for x in os.listdir(conf.train.model_checkpoint_callback.dirpath) if not x.startswith('.')]
-    checkpoint_path = sorted(paths, key=lambda p : int(p.split('=')[1].split('-')[0]))[-1]
-    checkpoint_path= os.path.join(conf.train.model_checkpoint_callback.dirpath, checkpoint_path)
-    logger.info(f'Best checkpoint loaded from {checkpoint_path}')
     pl_module = pl_module.load_from_checkpoint(checkpoint_path)
 
     # module test

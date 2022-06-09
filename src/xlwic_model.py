@@ -22,7 +22,7 @@ class XLWiCModel(nn.Module):
     def forward(self, input_ids, indices_mask, labels=None):
         enc_output = self.encoder(input_ids)
         
-        hs_indices = self.conf.model.hidden_states_indices
+        hs_indices = self.conf.model.hidden_states_indices  
         hidden_states = [enc_output.hidden_states[x] for x in hs_indices]
         hidden_states = sum(hidden_states)
 

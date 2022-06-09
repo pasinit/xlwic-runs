@@ -12,10 +12,11 @@ conda activate "$env_name"
 # install torch
 read -rp "Enter cuda version (e.g. '10.1' or 'none' to avoid installing cuda support): " cuda_version
 if [ "$cuda_version" == "none" ]; then
-    conda install -y pytorch torchvision cpuonly -c pytorch
+    conda install -y pytorch cpuonly -c pytorch
 else
-    conda install -y pytorch torchvision cudatoolkit=$cuda_version -c pytorch
+    conda install -y pytorch cudatoolkit=$cuda_version -c pytorch
 fi
-
+CUDA=`echo $cuda_version | sed "s/\.//g"`
+pip install torch-scatter -f https://data.pyg.org/whl/torch-1.11.0+cu${CUDA}.html
 # install python requirements
 pip install -r requirements.txt
