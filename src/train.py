@@ -38,7 +38,7 @@ def train(conf: omegaconf.DictConfig) -> None:
     if conf.train.model_checkpoint_callback is not None:
         model_checkpoint_callback: ModelCheckpoint = hydra.utils.instantiate(conf.train.model_checkpoint_callback)
         callbacks_store.append(model_checkpoint_callback)
-    experiment_name = conf.train.model_name + '_' + conf.data.target_identification + '_' + conf.model.subword_combiner + '_' + conf.model.words_combiner
+    experiment_name = conf.train.model_name + '_' + conf.data.target_identification + '_' + conf.model.subword_combiner + '_' + conf.model.words_combiner + '_' + conf.train.seed
     save_dir = '/'.join(os.getcwd().split('/')[:-2])
 
     wandb_logger = pl_loggers.WandbLogger(name=experiment_name, 
