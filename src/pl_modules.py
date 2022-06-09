@@ -76,11 +76,11 @@ class BasePLModule(pl.LightningModule):
         # params = map(lambda elem: elem[1], filter(lambda item: not item[0].startswith('encoder'), self.model.named_parameters()))
         params = self.model.parameters()
         optimizer = AdamW(params, lr=self.hparams.train.lr)
-        scheduler = LinearWarmupCosineAnnealingLR(optimizer, 1500, 1500 * self.hparams.train.pl_trainer.max_epochs)
+        # scheduler = LinearWarmupCosineAnnealingLR(optimizer, 1500, 1500 * self.hparams.train.pl_trainer.max_epochs)
         return {
             'optimizer':optimizer, 
-            'lr_scheduler': 
-            {
-                'scheduler':scheduler
-            }
+            # 'lr_scheduler': 
+            # {
+            #     'scheduler':scheduler
+            # }
         }
