@@ -7,9 +7,7 @@ from torch.utils.data import DataLoader
 import pytorch_lightning as pl
 from torch.nn.utils.rnn import pad_sequence
 from transformers import AutoTokenizer
-
 from xlwic_dataset import XLWIC_TESET_PATHS, XLWICDataset
-
 
 class BasePLDataModule(pl.LightningDataModule):
 
@@ -18,16 +16,18 @@ class BasePLDataModule(pl.LightningDataModule):
         self.conf = conf
         self.xlwic_dir = conf.data.data_dir
         self.training_path = os.path.join(self.xlwic_dir, 'wic_english', 'train_en.txt')
+        self.target_identification = conf.data.target_identification
         self.val_path = os.path.join(self.xlwic_dir, 'wic_english', 'valid_en.txt')
         self.test_paths = [os.path.join(self.xlwic_dir, p) for p in XLWIC_TESET_PATHS]
         self.tokenizer = AutoTokenizer.from_pretrained(conf.model.pretrained_model_name)
-        self.training_set = XLWICDataset(self.training_path, tokenizer=self.tokenizer, split='train', language='EN')
-        self.dev_set = XLWICDataset(self.val_path, tokenizer=self.tokenizer, split='dev', language='EN')
+        self.training_set = XLWICDataset(self.training_path, tokenizer=self.tokenizer, target_identification=self.target_identification, split='train', language='EN')
+        self.dev_set = XLWICDataset(self.val_path, tokenizer=self.tokenizer, target_identification=self.target_identification, split='dev', language='EN')
         self.test_sets = {}
         for path in self.test_paths:
             lang = path.split('_')[-1]
             dataset = XLWICDataset(os.path.join(path, f'{lang}_test_data.txt'), self.tokenizer, 
-            answer_path=os.path.join(path, f'{lang}_test_gold.txt'), language=lang.upper(), split='test')
+            answer_path=os.path.join(path, f'{lang}_test_gold.txt'), language=lang.upper(), split='test', 
+            target_identification=self.target_identification)
             self.test_sets[lang.upper()] = dataset
 
         

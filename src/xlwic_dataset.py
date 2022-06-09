@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 class XLWICDataset(Dataset):
-    def __init__(self, data_path, tokenizer:PreTrainedTokenizer, language, split, answer_path=None):
+    def __init__(self, data_path, tokenizer:PreTrainedTokenizer, language, split, target_identification, answer_path=None):
         super().__init__()
         self.name = f'xlwic-{language}-{split}'
         self.language = language
@@ -40,8 +40,12 @@ class XLWICDataset(Dataset):
                     line = line.lower()
                     lemma, pos, idx_start_1, idx_end_1, idx_start_2, idx_end_2, s1, s2, *label = line.strip().split('\t')
                     idx_start_1, idx_end_1, idx_start_2, idx_end_2 = int(idx_start_1), int(idx_end_1), int(idx_start_2), int(idx_end_2)
-                    input_ids, indices_mask = self.get_input_ids(tokenizer, s1, s2, idx_start_1, idx_end_1, idx_start_2, idx_end_2)
-                    
+                    if target_identification == 'left_right':
+                        input_ids, indices_mask = self.get_input_ids_left_right(tokenizer, s1, s2, idx_start_1, idx_end_1, idx_start_2, idx_end_2)
+                    if target_identification == 'char_2_token':
+                        input_ids, indices_mask = self.get_input_ids_char_to_token(tokenizer, s1, s2, idx_start_1, idx_end_1, idx_start_2, idx_end_2)
+                    else: 
+                        raise RuntimeError(f"Target identification method {target_identification} not recognised, please choose between \{'left_right', 'char_2_token'\}.")
                     example = {'input_ids': input_ids, 'indices_mask': indices_mask}
                     if len(label) > 0:
                         example['label'] = int(label[0])
@@ -53,29 +57,29 @@ class XLWICDataset(Dataset):
                     examples[i]['label'] = int(answer)
 
 
-    # def get_input_ids(self, tokenizer, s1, s2, idx_start_1, idx_end_1, idx_start_2, idx_end_2):
+    def get_input_ids_left_right(self, tokenizer, s1, s2, idx_start_1, idx_end_1, idx_start_2, idx_end_2):
 
-    #     s1_encodings_left = tokenizer(s1[:idx_start_1])['input_ids'][:-1] # take off eos
-    #     s1_encodings_word = tokenizer(s1[idx_start_1:idx_end_1], add_special_tokens=False)['input_ids']
-    #     s1_encodings_right = tokenizer(s1[idx_end_1:])['input_ids'][1:] # take off bos
-    #     s1_encodings = s1_encodings_left + s1_encodings_word + s1_encodings_right
+        s1_encodings_left = tokenizer(s1[:idx_start_1])['input_ids'][:-1] # take off eos
+        s1_encodings_word = tokenizer(s1[idx_start_1:idx_end_1], add_special_tokens=False)['input_ids']
+        s1_encodings_right = tokenizer(s1[idx_end_1:])['input_ids'][1:] # take off bos
+        s1_encodings = s1_encodings_left + s1_encodings_word + s1_encodings_right
 
-    #     s2_encodings_left = tokenizer(s2[:idx_start_2], add_special_tokens=False)['input_ids']
-    #     s2_encodings_word = tokenizer(s2[idx_start_2:idx_end_2], add_special_tokens=False)['input_ids']
-    #     s2_encodings_right = tokenizer(s2[idx_end_2:])['input_ids'][1:] # take off bos
-    #     s2_encodings = s2_encodings_left + s2_encodings_word + s2_encodings_right
+        s2_encodings_left = tokenizer(s2[:idx_start_2], add_special_tokens=False)['input_ids']
+        s2_encodings_word = tokenizer(s2[idx_start_2:idx_end_2], add_special_tokens=False)['input_ids']
+        s2_encodings_right = tokenizer(s2[idx_end_2:])['input_ids'][1:] # take off bos
+        s2_encodings = s2_encodings_left + s2_encodings_word + s2_encodings_right
 
-    #     target_token_idx_1 = list(range(len(s1_encodings_left), len(s1_encodings_left) + len(s1_encodings_word)))
-    #     target_token_idx_2 = list(range(len(s1_encodings) + len(s2_encodings_left), len(s1_encodings) + len(s2_encodings_left) + len(s2_encodings_word)))
+        target_token_idx_1 = list(range(len(s1_encodings_left), len(s1_encodings_left) + len(s1_encodings_word)))
+        target_token_idx_2 = list(range(len(s1_encodings) + len(s2_encodings_left), len(s1_encodings) + len(s2_encodings_left) + len(s2_encodings_word)))
 
-    #     input_ids = s1_encodings + s2_encodings
-    #     indices_mask = np.zeros_like(input_ids, dtype=int)
-    #     indices_mask[target_token_idx_1] = 1
-    #     indices_mask[target_token_idx_2] = 2
-    #     return input_ids, indices_mask
+        input_ids = s1_encodings + s2_encodings
+        indices_mask = np.zeros_like(input_ids, dtype=int)
+        indices_mask[target_token_idx_1] = 1
+        indices_mask[target_token_idx_2] = 2
+        return input_ids, indices_mask
 
                 
-    def get_input_ids(self, tokenizer, s1, s2, idx_start_1, idx_end_1, idx_start_2, idx_end_2):
+    def get_input_ids_char_to_token(self, tokenizer, s1, s2, idx_start_1, idx_end_1, idx_start_2, idx_end_2):
         s1_encodings = tokenizer(s1).encodings[0]
         s2_encodings = tokenizer(s2).encodings[0]
         s1_input_ids = s1_encodings.ids
