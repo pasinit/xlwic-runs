@@ -2,6 +2,7 @@ from argparse import ArgumentParser
 import yaml
 import os
 
+
 if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('--words_combiner', choices=['cat', 'sum'], required=True)

@@ -38,12 +38,12 @@ def train(conf: omegaconf.DictConfig) -> None:
     if conf.train.model_checkpoint_callback is not None:
         model_checkpoint_callback: ModelCheckpoint = hydra.utils.instantiate(conf.train.model_checkpoint_callback)
         callbacks_store.append(model_checkpoint_callback)
-    experiment_name = 'xlwic-' + conf.train.model_name
+    experiment_name = conf.train.model_name
     save_dir = '/'.join(os.getcwd().split('/')[:-2])
 
     wandb_logger = pl_loggers.WandbLogger(name=experiment_name, 
-            save_dir = save_dir, project='xlwic-reruns', 
-            mode='dryrun' if dryrun else None)
+            save_dir = save_dir, project='xlwic-sweeps', 
+            mode='dryrun' if dryrun else None, config=conf)
 
 
     # trainer

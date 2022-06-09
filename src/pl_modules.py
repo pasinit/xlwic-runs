@@ -3,7 +3,7 @@ from typing import Any
 import pytorch_lightning as pl
 import torch
 from transformers import AutoTokenizer
-from torch.optim import AdamW
+from transformers.optimization import AdamW
 from sklearn.metrics import accuracy_score
 from xlwic_model import XLWiCModel
 from pl_bolts.optimizers.lr_scheduler import LinearWarmupCosineAnnealingLR

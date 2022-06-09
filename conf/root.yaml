@@ -1,7 +1,7 @@
 # Required to make the "experiments" dir the default one for the output of the models
 hydra:
   run:
-    dir: ./experiments/${train.model_name}/target_${data.target_identification}/subword_${model.subword_combiner}_word_${model.word_combiner}/
+    dir: ./experiments/${train.model_name}/target_${data.target_identification}/subword_${model.subword_combiner}_word_${model.words_combiner}/
 
 defaults:
   - _self_
