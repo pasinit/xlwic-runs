@@ -45,7 +45,7 @@ class XLWICDataset(Dataset):
                     if target_identification == 'char_2_token':
                         input_ids, indices_mask = self.get_input_ids_char_to_token(tokenizer, s1, s2, idx_start_1, idx_end_1, idx_start_2, idx_end_2)
                     else: 
-                        raise RuntimeError(f"Target identification method {target_identification} not recognised, please choose between \{'left_right', 'char_2_token'\}.")
+                        raise RuntimeError(f"Target identification method {target_identification} not recognised, please choose between \{'left_right', 'char_2_token'}.")
                     example = {'input_ids': input_ids, 'indices_mask': indices_mask}
                     if len(label) > 0:
                         example['label'] = int(label[0])
