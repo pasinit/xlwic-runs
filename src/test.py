@@ -42,8 +42,13 @@ def test(conf: omegaconf.DictConfig) -> None:
         accuracy = pl_module.test_accuracy
         accuracies[lang] = accuracy 
     
-    for l, a in sorted(accuracies.items(), key=lambda elem: elem[0]):
-        print(f'{l}: {a:.3f}')
+    keys = sorted(accuracies.keys())
+    print("\t".join(keys))
+    values = [f"{accuracies[x] * 100:.3f}" for x in keys]
+    print("\t".join(values))
+
+    # for l, a in sorted(accuracies.items(), key=lambda elem: elem[0]):
+    #     print(f'{l}: {a:.3f}')
     print(f'avg_acc: {sum(accuracies.values())/len(accuracies):.3f}')
     
 
