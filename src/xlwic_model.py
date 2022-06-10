@@ -30,8 +30,8 @@ class XLWiCModel(nn.Module):
             hidden_states_aux = scatter_mean(hidden_states, indices_mask, 1)
         elif self.conf.model.subword_combiner == 'sum':
             hidden_states_aux = scatter_sum(hidden_states, indices_mask, 1)
-        # elif self.conf.model.subword_combiner == 'first':
-        #     hidden_states_aux = hidden_states[]
+        elif self.conf.model.subword_combiner == 'first': # doesn't matter the operation, we have only 1 index per word.
+            hidden_states_aux = scatter_mean(hidden_states, indices_mask, 1) 
         else:
             raise RuntimeError(f'Subword Combiner {self.conf.model.subword_combiner} not recognised. Choose between `mean` or `sum`')
 
