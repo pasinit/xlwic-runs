@@ -1,6 +1,6 @@
 hidden_states_indices:
 - -1
 pretrained_model_name: xlm-roberta-large
-subword_combiner: mean
 use_bias: true
+subword_combiner: mean
 words_combiner: cat

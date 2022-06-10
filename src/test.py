@@ -21,17 +21,18 @@ def test(conf: omegaconf.DictConfig) -> None:
     # reproducibility
     pl.seed_everything(conf.train.seed)
 
-    # data module declaration
-    pl_data_module = BasePLDataModule(conf)
-
+    
     # main module declaration
     pl_module = BasePLModule(conf)
-
+    
     # trainer
     trainer: Trainer = hydra.utils.instantiate(conf.train.pl_trainer)
 
     pl_module = pl_module.load_from_checkpoint(checkpoint_path)
-
+    
+    # data module declaration
+    pl_data_module = BasePLDataModule(pl_module.hparams)
+    
     # module test
     accuracies = {}
     for lang in pl_data_module.test_sets.keys():

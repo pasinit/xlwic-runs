@@ -55,13 +55,13 @@ class BasePLModule(pl.LightningModule):
     def on_test_epoch_start(self) -> None:
         self.test_accuracy = None
 
-    def test_step(self, batch: dict, batch_idx: int) -> Any:
+    def test_step(self, batch: dict, batch_idx: int, *args, **kwargs) -> Any:
         forward_output = self.forward(**batch)
         self.log("test_loss", forward_output["loss"])
         predictions = forward_output['predictions']
         labels = batch['labels']
         return predictions, labels
-    
+        
     def test_epoch_end(self, outputs) -> None:
         self.test_accuracy = None
         predictions, labels = zip(*outputs)

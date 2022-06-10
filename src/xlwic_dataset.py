@@ -45,7 +45,7 @@ class XLWICDataset(Dataset):
                     idx_start_1, idx_end_1, idx_start_2, idx_end_2 = int(idx_start_1), int(idx_end_1), int(idx_start_2), int(idx_end_2)
                     if target_identification == 'left_right':
                         input_ids, indices_mask = self.get_input_ids_left_right(tokenizer, s1, s2, idx_start_1, idx_end_1, idx_start_2, idx_end_2)
-                    if target_identification == 'char_2_token':
+                    elif target_identification == 'char_2_token':
                         input_ids, indices_mask = self.get_input_ids_char_to_token(tokenizer, s1, s2, idx_start_1, idx_end_1, idx_start_2, idx_end_2)
                     else: 
                         raise RuntimeError(f"Target identification method {target_identification} not recognised, please choose between \{'left_right', 'char_2_token'}.")
@@ -61,7 +61,10 @@ class XLWICDataset(Dataset):
 
 
     def get_input_ids_left_right(self, tokenizer, s1, s2, idx_start_1, idx_end_1, idx_start_2, idx_end_2):
-
+        assert idx_start_1 < idx_end_1
+        assert idx_start_2 < idx_end_2
+        s1 = s1.replace(u'\u200c', '')
+        s2 = s2.replace(u'\u200c', '')
         s1_encodings_left = tokenizer(s1[:idx_start_1])['input_ids'][:-1] # take off eos
         s1_encodings_word = tokenizer(s1[idx_start_1:idx_end_1], add_special_tokens=False)['input_ids']
         s1_encodings_right = tokenizer(s1[idx_end_1:])['input_ids'][1:] # take off bos
@@ -80,6 +83,14 @@ class XLWICDataset(Dataset):
             target_token_idx_2 = target_token_idx_2[0:1]
 
         input_ids = s1_encodings + s2_encodings
+
+        ## Gotta strip off outer and inner spaces for the check mainly for Farsi.
+        decoded_word_1 = tokenizer.decode(np.array(input_ids)[target_token_idx_1]).strip().replace(' ', '')
+        decoded_word_2 = tokenizer.decode(np.array(input_ids)[target_token_idx_2]).strip().replace(' ', '')
+        assert decoded_word_1 == tokenizer.unk_token or decoded_word_1 == s1[idx_start_1:idx_end_1].strip().replace(' ', '')
+        assert decoded_word_2 == tokenizer.unk_token or decoded_word_2 == s2[idx_start_2:idx_end_2].strip().replace(' ', '')
+        if decoded_word_2 == tokenizer.unk_token or decoded_word_1 == tokenizer.unk_token:
+            print(f'WARNING the target tokens ({s1[idx_start_1:idx_end_1]}, {s2[idx_start_2:idx_end_2]}) are tokenized as UNK')
         indices_mask = np.zeros_like(input_ids, dtype=int)
         indices_mask[target_token_idx_1] = 1
         indices_mask[target_token_idx_2] = 2
@@ -109,7 +120,7 @@ class XLWICDataset(Dataset):
         for i, pair in enumerate(offsets):
             if start_char >= pair[0] and start_char < pair[1] and sum(pair) > 0:
                 j = i+1
-                while j < len(offsets) and offsets[j][1] < end_char and offsets[j][0] == pair[1]:
+                while j < len(offsets) and offsets[j][1] <= end_char and offsets[j][0] == pair[1]:
                     j+=1 
                     continue
                 return np.array(list(range(i, j)))
@@ -142,3 +153,14 @@ class XLWICDataset(Dataset):
     
     def __len__(self):
         return len(self.examples)
+
+
+if __name__ == '__main__':
+    tokenizer = AutoTokenizer.from_pretrained('xlm-roberta-large')
+    for rel_path in XLWIC_TESET_PATHS:
+        lang = rel_path.split('_')[-1]
+        print('Language', lang.upper())
+        data_path = os.path.join('data/xlwic_datasets/', rel_path, lang + '_test_data.txt')
+        gold_path = os.path.join('data/xlwic_datasets/', rel_path, lang + '_test_gold.txt')
+        XLWICDataset(data_path, 
+        tokenizer, lang, 'test', 'char_2_token', 'mean', gold_path)
