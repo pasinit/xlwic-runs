@@ -51,11 +51,11 @@ def train(conf: omegaconf.DictConfig) -> None:
 
     # module fit
     trainer.fit(pl_module, datamodule=pl_data_module)
-    paths = [x for x in os.listdir(conf.train.model_checkpoint_callback.dirpath) if not x.startswith('.')]
-    checkpoint_path = sorted(paths, key=lambda p : int(p.split('=')[1].split('-')[0]))[-1]
-    checkpoint_path= os.path.join(conf.train.model_checkpoint_callback.dirpath, checkpoint_path)
-    logger.info(f'Best checkpoint loaded from {checkpoint_path}')
-    pl_module = pl_module.load_from_checkpoint(checkpoint_path)
+    # paths = [x for x in os.listdir(conf.train.model_checkpoint_callback.dirpath) if not x.startswith('.')]
+    # checkpoint_path = sorted(paths, key=lambda p : int(p.split('=')[1].split('-')[0]))[-1]
+    # checkpoint_path= os.path.join(conf.train.model_checkpoint_callback.dirpath, checkpoint_path)
+    # logger.info(f'Best checkpoint loaded from {checkpoint_path}')
+    # pl_module = pl_module.load_from_checkpoint(checkpoint_path)
 
     # module test
     # accuracies = {}

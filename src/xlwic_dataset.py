@@ -28,11 +28,14 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 class XLWICDataset(Dataset):
-    def __init__(self, data_path, tokenizer:PreTrainedTokenizer, language, split, target_identification, answer_path=None):
+    def __init__(self, data_path, tokenizer:PreTrainedTokenizer, language, split, target_identification, 
+    subword_combiner,
+    answer_path=None):
         super().__init__()
         self.name = f'xlwic-{language}-{split}'
         self.language = language
         self.examples = examples = self.maybe_load_cache()
+        self.subword_combiner = subword_combiner
         if examples is None:
             self.examples = examples = []
             with open(data_path) as lines:
@@ -69,8 +72,12 @@ class XLWICDataset(Dataset):
         s2_encodings_right = tokenizer(s2[idx_end_2:])['input_ids'][1:] # take off bos
         s2_encodings = s2_encodings_left + s2_encodings_word + s2_encodings_right
 
+            
         target_token_idx_1 = list(range(len(s1_encodings_left), len(s1_encodings_left) + len(s1_encodings_word)))
         target_token_idx_2 = list(range(len(s1_encodings) + len(s2_encodings_left), len(s1_encodings) + len(s2_encodings_left) + len(s2_encodings_word)))
+        if self.subword_combiner == 'first':
+            target_token_idx_1 = target_token_idx_1[0:1]
+            target_token_idx_2 = target_token_idx_2[0:1]
 
         input_ids = s1_encodings + s2_encodings
         indices_mask = np.zeros_like(input_ids, dtype=int)
@@ -90,7 +97,9 @@ class XLWICDataset(Dataset):
         s2_input_ids = s2_encodings.ids[1:] # take out the bos_token
 
         input_ids = s1_input_ids + s2_input_ids
-
+        if self.subword_combiner == 'first':
+            target_token_idx_1 = target_token_idx_1[0:1]
+            target_token_idx_2 = target_token_idx_2[0:1]
         indices_mask = np.zeros_like(input_ids, dtype=int)
         indices_mask[target_token_idx_1] = 1
         indices_mask[target_token_idx_2] = 2
