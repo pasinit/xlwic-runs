@@ -30,6 +30,7 @@ def test(conf: omegaconf.DictConfig) -> None:
 
     pl_module = pl_module.load_from_checkpoint(checkpoint_path)
     
+    pl_module.hparams.data.data_dir = conf.data.data_dir
     # data module declaration
     pl_data_module = BasePLDataModule(pl_module.hparams)
     

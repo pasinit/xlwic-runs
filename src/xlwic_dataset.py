@@ -18,7 +18,7 @@ KO='xlwic_wn/korean_ko'
 FR='xlwic_wikt/french_fr'  
 DE='xlwic_wikt/german_de'
 IT='xlwic_wikt/italian_it'
-XLWIC_TESET_PATHS= [BG, ZH, HR, DA, NL, ET, JA, FA, KO] #, FR, DE, IT]
+XLWIC_TESET_PATHS= [BG, ZH, HR, DA, NL, ET, JA, FA, KO, FR, DE, IT]
 CACHE_DIR='/home/tommaso/dev/xlwic/data/xlwic_datasets/.cache'
 if not os.path.exists(CACHE_DIR):
     os.makedirs(CACHE_DIR)
@@ -87,8 +87,10 @@ class XLWICDataset(Dataset):
         ## Gotta strip off outer and inner spaces for the check mainly for Farsi.
         decoded_word_1 = tokenizer.decode(np.array(input_ids)[target_token_idx_1]).strip().replace(' ', '')
         decoded_word_2 = tokenizer.decode(np.array(input_ids)[target_token_idx_2]).strip().replace(' ', '')
-        assert decoded_word_1 == tokenizer.unk_token or decoded_word_1 == s1[idx_start_1:idx_end_1].strip().replace(' ', '')
-        assert decoded_word_2 == tokenizer.unk_token or decoded_word_2 == s2[idx_start_2:idx_end_2].strip().replace(' ', '')
+        if not (decoded_word_1 == tokenizer.unk_token or decoded_word_1 == s1[idx_start_1:idx_end_1].strip().replace(' ', '')):
+            print(f'[WARNING] selected target word from input_ids and target word from the string are not exactly the same.\nFrom ids: {decoded_word_1}; From string {s1[idx_start_1:idx_end_1]}')
+        if not (decoded_word_2 == tokenizer.unk_token or decoded_word_2 == s2[idx_start_2:idx_end_2].strip().replace(' ', '')):
+            print(f'[WARNING] selected target word from input_ids and target word from the string are not exactly the same.\nFrom ids: {decoded_word_2}; From string {s2[idx_start_2:idx_end_2]}')
         if decoded_word_2 == tokenizer.unk_token or decoded_word_1 == tokenizer.unk_token:
             print(f'WARNING the target tokens ({s1[idx_start_1:idx_end_1]}, {s2[idx_start_2:idx_end_2]}) are tokenized as UNK')
         indices_mask = np.zeros_like(input_ids, dtype=int)
