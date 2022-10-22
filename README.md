@@ -4,5 +4,6 @@ This repository contains code and pretrained baselines (coming soon) for the [xl
 | | BG	|DA	|ET	|FA	|HR	|JA	|KO	|NL	|ZH	|IT	|FR	|DE	|AVG	|Epoch	|Batch Size	|EN Dev |
 |:---:| :---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:	| :---: |
 XLM-R Large | 62.05	|66.27	|66.15	|78.25	|64.71	|57.28	|69.92	|70.22	|61.20	|58.28	|60.20	|61.31	|64.65	|8	|32	|74.14|
-XLM-R Base | |
+
+
 The model averages subword embeddings to create word embeddings and concatenate the embeddings of the two target words before prediction (as also reported in the paper). 
